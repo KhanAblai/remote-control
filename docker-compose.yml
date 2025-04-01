@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  remote-control:
+    build: .
+    container_name: remote-control-app  # Уникальное имя контейнера
+    networks:
+      - my-custom-network
+    ports:
+      - "8765:8765"  # host:container порт
+    restart: unless-stopped
+    environment:
+      - PORT=8765
+
+networks:
+  my-custom-network:
+    external: true

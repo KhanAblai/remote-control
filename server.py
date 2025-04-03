@@ -12,17 +12,26 @@ import platform
 
 async def handle_download(request):
     user_agent = request.headers.get('User-Agent', '').lower()
+    os_type = request.match_info.get('os_type', '').lower()
 
-    # Добавить логирование
-    print("Available files in /app/dist:")
-    print(os.listdir('/app/dist'))
+    # Логирование доступных файлов
+    logger.debug("Available files in /app/dist: %s", os.listdir('/app/dist'))
 
-    if 'windows' in user_agent:
+    # Определение OS по параметру URL или User-Agent
+    if not os_type:
+        if 'windows' in user_agent:
+            os_type = 'windows'
+        elif 'linux' in user_agent:
+            os_type = 'linux'
+
+    # Выбор файла
+    if os_type == 'windows':
         file_path = '/app/dist/ClickControlApp.exe'
-    elif 'linux' in user_agent:
+        file_name = 'ClickControlApp.exe'
+    elif os_type == 'linux':
         file_path = '/app/dist/ClickControlApp'
+        file_name = 'ClickControlApp'
     else:
-        # Если ОС не определена - предлагаем выбор
         return web.Response(
             text="Please choose your OS version: "
                  "<a href='/download/windows'>Windows</a> | "
@@ -32,21 +41,21 @@ async def handle_download(request):
 
     # Проверка существования файла
     if not os.path.exists(file_path):
+        logger.error("File not found: %s", file_path)
         return web.Response(text="File not found", status=404)
 
-    # Настройка заголовков для скачивания
-    headers = {
-        "Content-Disposition": f'attachment; filename="{file_name}"',
-        "Content-Type": "application/octet-stream"
-    }
-
-    return web.FileResponse(path=file_path, headers=headers)
+    return web.FileResponse(
+        path=file_path,
+        headers={
+            "Content-Disposition": f'attachment; filename="{file_name}"'
+        }
+    )
 
 
 async def start_http_server():
     app = web.Application()
-    app.router.add_get('/download', handle_download)  # Основная ссылка
-    app.router.add_get('/download/{os_type}', handle_download)  # Ручной выбор
+    app.router.add_get('/download', handle_download)
+    app.router.add_get('/download/{os_type}', handle_download)
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, '0.0.0.0', 8080)

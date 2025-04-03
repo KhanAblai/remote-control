@@ -3,4 +3,4 @@ pyautogui
 ntplib
 pyperclip
 python-dotenv
-+aiohttp
+aiohttp

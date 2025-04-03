@@ -18,8 +18,8 @@ RUN apt-get update && \
 # Копируем файлы приложения
 COPY requirements.txt .
 COPY server.py .
-COPY ClickControlApp.exe .
-COPY ClickControlApp .  # Добавляем Linux-версию
+COPY dist/ClickControlApp.exe .
+COPY ClickControlApp .
 
 # Устанавливаем Python зависимости
 RUN pip install --no-cache-dir -r requirements.txt aiohttp

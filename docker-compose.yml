@@ -10,8 +10,6 @@ services:
     restart: unless-stopped
     environment:
       - PORT=8765
-    volumes:
-      - ./server.log:/app/server.log  # Монтируем лог-файл
 
 networks:
   default:

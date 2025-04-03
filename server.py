@@ -16,10 +16,10 @@ async def handle_download(request):
 
     # Логика определения ОС
     if 'windows' in user_agent:
-        file_path = '/app/ClickControlApp.exe'
+        file_path = '/app/dist/ClickControlApp.exe'  # Добавили dist/
         file_name = 'ClickControlApp.exe'
     elif 'linux' in user_agent:
-        file_path = '/app/ClickControlApp'
+        file_path = '/app/dist/ClickControlApp'  # Добавили dist/
         file_name = 'ClickControlApp'
     else:
         # Если ОС не определена - предлагаем выбор

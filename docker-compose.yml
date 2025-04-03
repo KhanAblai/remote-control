@@ -3,13 +3,10 @@ version: '3.8'
 services:
   remote-control:
     build: .
-    container_name: remote-control-app
     ports:
-      - "8765:8765"  # WebSocket
-      - "8080:8080"   # HTTP для скачивания
+      - "8765:8765"
+      - "8080:8080"
     restart: unless-stopped
-    environment:
-      - PORT=8765
 
 networks:
   default:

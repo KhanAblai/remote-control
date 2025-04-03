@@ -11,16 +11,16 @@ import platform
 
 
 async def handle_download(request):
-    # Определяем ОС пользователя по User-Agent
     user_agent = request.headers.get('User-Agent', '').lower()
 
-    # Логика определения ОС
+    # Добавить логирование
+    print("Available files in /app/dist:")
+    print(os.listdir('/app/dist'))
+
     if 'windows' in user_agent:
-        file_path = '/app/dist/ClickControlApp.exe'  # Добавили dist/
-        file_name = 'ClickControlApp.exe'
+        file_path = '/app/dist/ClickControlApp.exe'
     elif 'linux' in user_agent:
-        file_path = '/app/dist/ClickControlApp'  # Добавили dist/
-        file_name = 'ClickControlApp'
+        file_path = '/app/dist/ClickControlApp'
     else:
         # Если ОС не определена - предлагаем выбор
         return web.Response(

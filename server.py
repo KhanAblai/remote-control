@@ -157,16 +157,6 @@ async def handle_show_clients(websocket):
         "clients": list(clients.keys())
     }))
 
-async def http_handler(request):
-    return web.FileResponse('./ClickControlApp.exe')
-
-async def start_http_server():
-    app = web.Application()
-    app.router.add_get('/download', http_handler)
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(runner, '0.0.0.0', 8080)
-    await site.start()
 
 async def main():
     await start_http_server()

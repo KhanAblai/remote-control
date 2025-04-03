@@ -4,7 +4,53 @@ import json
 import time
 import logging
 from uuid import uuid4
+from aiohttp import web
+import aiohttp
+import os
+import platform
 
+
+async def handle_download(request):
+    # Определяем ОС пользователя по User-Agent
+    user_agent = request.headers.get('User-Agent', '').lower()
+
+    # Логика определения ОС
+    if 'windows' in user_agent:
+        file_path = '/app/ClickControlApp.exe'
+        file_name = 'ClickControlApp.exe'
+    elif 'linux' in user_agent:
+        file_path = '/app/ClickControlApp'
+        file_name = 'ClickControlApp'
+    else:
+        # Если ОС не определена - предлагаем выбор
+        return web.Response(
+            text="Please choose your OS version: "
+                 "<a href='/download/windows'>Windows</a> | "
+                 "<a href='/download/linux'>Linux</a>",
+            content_type='text/html'
+        )
+
+    # Проверка существования файла
+    if not os.path.exists(file_path):
+        return web.Response(text="File not found", status=404)
+
+    # Настройка заголовков для скачивания
+    headers = {
+        "Content-Disposition": f'attachment; filename="{file_name}"',
+        "Content-Type": "application/octet-stream"
+    }
+
+    return web.FileResponse(path=file_path, headers=headers)
+
+
+async def start_http_server():
+    app = web.Application()
+    app.router.add_get('/download', handle_download)  # Основная ссылка
+    app.router.add_get('/download/{os_type}', handle_download)  # Ручной выбор
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, '0.0.0.0', 8080)
+    await site.start()
 # Настройка логирования
 logging.basicConfig(
     level=logging.DEBUG,
@@ -102,19 +148,23 @@ async def handle_show_clients(websocket):
         "clients": list(clients.keys())
     }))
 
+async def http_handler(request):
+    return web.FileResponse('./ClickControlApp.exe')
+
+async def start_http_server():
+    app = web.Application()
+    app.router.add_get('/download', http_handler)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, '0.0.0.0', 8080)
+    await site.start()
 
 async def main():
+    await start_http_server()
     try:
-        async with websockets.serve(
-                handle_connection,
-                "0.0.0.0",
-                8765,
-                ping_interval=None,
-                logger=logger
-        ):
-            logger.info("Server started on ws://0.0.0.0:8765")
+        async with websockets.serve(handle_connection, "0.0.0.0", 8765):
+            print("Сервер запущен на ws://0.0.0.0:8765")
             await asyncio.Future()
-
     except Exception as e:
         logger.critical(f"Server failed to start: {str(e)}", exc_info=True)
         raise

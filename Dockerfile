@@ -1,20 +1,28 @@
 FROM python:3.10-slim
 
+# Устанавливаем переменные окружения
 ENV PORT=8765
+ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Установка зависимостей
+# Установка системных зависимостей
 RUN apt-get update && \
     apt-get install -y \
     gcc \
     procps \
     net-tools && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Копируем файлы приложения
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
 COPY server.py .
+COPY ClickControlApp.exe .
+COPY ClickControlApp .  # Добавляем Linux-версию
 
-CMD ["sh", "-c", "python server.py --port ${PORT}"]
+# Устанавливаем Python зависимости
+RUN pip install --no-cache-dir -r requirements.txt aiohttp
+
+# Запуск сервера
+CMD ["python", "server.py"]

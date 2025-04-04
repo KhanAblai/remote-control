@@ -70,6 +70,5 @@ missing module named numpy - imported by PIL._typing (conditional, optional), py
 missing module named olefile - imported by PIL.FpxImagePlugin (top-level), PIL.MicImagePlugin (top-level)
 missing module named defusedxml - imported by PIL.Image (optional)
 missing module named cv2 - imported by pyscreeze (optional)
-excluded module named tkinter - imported by C:\Users\Adlet\PycharmProjects\Time\ClickControlApp.py (top-level), pymsgbox (conditional, optional), mouseinfo (conditional, optional)
 missing module named vms_lib - imported by platform (delayed, optional)
 missing module named java - imported by platform (delayed)

@@ -11,45 +11,51 @@ import platform
 
 
 async def handle_download(request):
-    user_agent = request.headers.get('User-Agent', '').lower()
-    os_type = request.match_info.get('os_type', '').lower()
+    try:
+        user_agent = request.headers.get('User-Agent', '').lower()
+        os_type = request.match_info.get('os_type', '').lower()
 
-    # Логирование доступных файлов
-    logger.debug("Available files in /app/dist: %s", os.listdir('/app/dist'))
+        logger.info(f"Download request from: {request.remote} | OS: {os_type}")
 
-    # Определение OS по параметру URL или User-Agent
-    if not os_type:
-        if 'windows' in user_agent:
-            os_type = 'windows'
-        elif 'linux' in user_agent:
-            os_type = 'linux'
+        # Логирование файлов в директории
+        dist_files = os.listdir('/app/dist')
+        logger.debug(f"Available files in /app/dist: {dist_files}")
 
-    # Выбор файла
-    if os_type == 'windows':
-        file_path = '/app/dist/ClickControlApp.exe'
-        file_name = 'ClickControlApp.exe'
-    elif os_type == 'linux':
-        file_path = '/app/dist/ClickControlApp'
-        file_name = 'ClickControlApp'
-    else:
-        return web.Response(
-            text="Please choose your OS version: "
-                 "<a href='/download/windows'>Windows</a> | "
-                 "<a href='/download/linux'>Linux</a>",
-            content_type='text/html'
+        # Выбор файла
+        if os_type == 'windows':
+            file_name = 'ClickControlApp.exe'
+        elif os_type == 'linux':
+            file_name = 'ClickControlApp'
+        else:
+            # Автоопределение по User-Agent
+            if 'windows' in user_agent:
+                file_name = 'ClickControlApp.exe'
+            elif 'linux' in user_agent:
+                file_name = 'ClickControlApp'
+            else:
+                return web.Response(
+                    text="Please choose your OS version: "
+                         "<a href='/download/windows'>Windows</a> | "
+                         "<a href='/download/linux'>Linux</a>",
+                    content_type='text/html'
+                )
+
+        file_path = f'/app/dist/{file_name}'
+
+        if not os.path.exists(file_path):
+            logger.error(f"File {file_name} not found!")
+            return web.Response(text="File not found", status=404)
+
+        return web.FileResponse(
+            path=file_path,
+            headers={
+                "Content-Disposition": f'attachment; filename="{file_name}"'
+            }
         )
 
-    # Проверка существования файла
-    if not os.path.exists(file_path):
-        logger.error("File not found: %s", file_path)
-        return web.Response(text="File not found", status=404)
-
-    return web.FileResponse(
-        path=file_path,
-        headers={
-            "Content-Disposition": f'attachment; filename="{file_name}"'
-        }
-    )
+    except Exception as e:
+        logger.error(f"Error in handle_download: {str(e)}", exc_info=True)
+        return web.Response(text="Internal Server Error", status=500)
 
 
 async def start_http_server():
